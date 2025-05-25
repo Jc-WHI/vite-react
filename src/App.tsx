@@ -7,15 +7,15 @@ function App() {
   const [characterName, setCharacterName] = useState('')
   const [characters, setCharacters] = useState([])
   // 환경 변수에서 API 키를 읽어옴
-  const apiKey = import.meta.env.VITE_API_KEY
+ 
 
-  const handleSearch = async () => {
-    if (!characterName || !apiKey) return
-    const url = `https://api.neople.co.kr/df/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}&limit=10&apikey=${apiKey}`
-    const res = await fetch(url)
-    const data = await res.json()
-    setCharacters(data.rows || [])
-  }
+const handleSearch = async () => {
+  if (!characterName) return;
+  const url = `/api/df?serverId=${serverId}&characterName=${encodeURIComponent(characterName)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  setCharacters(data.rows || []);
+}
 
   return (
     <>
