@@ -21,7 +21,6 @@ function App() {
     <>
       <h1>nulldev kr</h1>
       <div>
-        {/* API 키 입력란은 배포 시 숨기거나 제거해도 됩니다 */}
         <select value={serverId} onChange={e => setServerId(e.target.value)}>
           <option value="cain">카인</option>
           <option value="diregie">디레지에</option>
@@ -39,15 +38,17 @@ function App() {
         />
         <button onClick={handleSearch}>검색</button>
       </div>
-      <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '24px' }}>
         {characters.map((char: any) => (
-          <div key={char.characterId}>
-            <div>{char.characterName} ({char.level}Lv)</div>
+          <div key={char.characterId} style={{ textAlign: 'center' }}>
             <img
               src={`https://img-api.neople.co.kr/df/servers/${serverId}/characters/${char.characterId}?zoom=1`}
               alt={char.characterName}
-              style={{ width: 100 }}
+              style={{ width: 100, display: 'block', margin: '0 auto' }}
             />
+            <div style={{ marginTop: '8px', fontWeight: 'bold' }}>
+              {char.characterName} ({char.level}Lv)
+            </div>
           </div>
         ))}
       </div>
