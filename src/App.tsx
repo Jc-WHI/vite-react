@@ -9,13 +9,13 @@ function App() {
   // 환경 변수에서 API 키를 읽어옴
  
 
-const handleSearch = async () => {
-  if (!characterName) return;
-  const url = `/api/df?serverId=${serverId}&characterName=${encodeURIComponent(characterName)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  setCharacters(data.rows || []);
-}
+  const handleSearch = async () => {
+    if (!characterName) return
+    const url = `/api/df?serverId=${serverId}&characterName=${encodeURIComponent(characterName)}`;
+    const res = await fetch(url)
+    const data = await res.json()
+    setCharacters(data.rows || [])
+  }
 
   return (
     <>
