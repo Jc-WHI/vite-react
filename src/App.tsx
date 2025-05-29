@@ -439,11 +439,11 @@ function App() {
                       style = EVENT_STYLES.raid
                       break
                     case 'region':
-                      content = `${item.data.regionName} 클리어`
+                      content = `${item.data.regionName || item.data.dungeonName || ''} 클리어`
                       style = EVENT_STYLES.region
                       break
                     case 'item':
-                      content = `${item.data.itemName}`
+                      content = `${item.data.itemName || '아이템 획득'}`
                       if (item.data.itemGrade || item.data.itemRarity) {
                         const grade = item.data.itemGrade || item.data.itemRarity
                         if (grade && grade in ITEM_GRADES) {
@@ -454,9 +454,16 @@ function App() {
                         itemImage = `https://img-api.neople.co.kr/df/items/${item.data.itemId}`
                       }
                       break
+                    case 'channel':
+                      content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
+                      break
                     default:
-                      content = JSON.stringify(item.data, null, 2)
+                      // 알 수 없는 이벤트 타입은 건너뛰기
+                      return null
                   }
+
+                  // content가 비어있으면 렌더링하지 않음
+                  if (!content) return null
 
                   return (
                     <div key={index} style={{ 
@@ -519,19 +526,27 @@ function App() {
                             position: 'relative',
                             width: '48px',
                             height: '48px',
-                            flexShrink: 0
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             <img 
                               src={itemImage} 
-                              alt={item.data.itemName} 
+                              alt={item.data.itemName || '아이템 이미지'} 
                               style={{ 
                                 width: '100%',
                                 height: '100%',
                                 borderRadius: '8px',
                                 border: '1px solid #ddd',
                                 background: '#fff',
-                                objectFit: 'contain'
+                                objectFit: 'contain',
+                                padding: '4px'
                               }} 
+                              onError={(e) => {
+                                // 이미지 로드 실패시 이미지 요소 숨기기
+                                e.currentTarget.style.display = 'none'
+                              }}
                             />
                           </div>
                         )}
