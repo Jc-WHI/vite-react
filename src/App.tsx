@@ -195,6 +195,17 @@ function App() {
               }
             }
           }
+          // 던전 클리어 이벤트 (513) 처리
+          if (item.code === '513' && item.data.dungeonName) {
+            return {
+              ...item,
+              code: '202', // 던전 클리어 코드로 변경
+              data: {
+                ...item.data,
+                dungeonName: `${item.data.dungeonName} 클리어`
+              }
+            }
+          }
           // 길드 관련 이벤트 처리
           if (['405', '507'].includes(item.code)) {
             return {
@@ -509,8 +520,22 @@ function App() {
                       break
                     default:
                       console.log('알 수 없는 타임라인 코드:', item.code, item.data)
-                      content = `이벤트 코드 ${item.code}`
-                      style = EVENT_STYLES.level
+                      // 알 수 없는 코드는 기본 이벤트로 표시
+                      if (item.data.dungeonName) {
+                        content = `${item.data.dungeonName} 클리어`
+                        style = EVENT_STYLES.region
+                      } else if (item.data.itemName) {
+                        content = `${item.data.itemName} 획득`
+                        if (item.data.itemRarity) {
+                          const grade = item.data.itemRarity
+                          if (grade in ITEM_GRADES) {
+                            style = ITEM_GRADES[grade]
+                          }
+                        }
+                      } else {
+                        content = '알 수 없는 이벤트'
+                        style = EVENT_STYLES.level
+                      }
                   }
 
                   if (!content) {
