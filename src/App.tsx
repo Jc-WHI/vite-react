@@ -150,7 +150,7 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
+      const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}`
       
       const res = await fetch(url)
       if (!res.ok) {
@@ -168,11 +168,24 @@ function App() {
       // 타임라인 데이터 정제
       const processedTimeline = data.timeline.rows
         .map((item: TimelineItem) => {
+          // 레이드 클리어 이벤트 (201) 처리
+          if (item.code === '201') {
+            return {
+              ...item,
+              data: {
+                ...item.data,
+                raidMode: item.data.modeName,
+                raidDifficulty: item.data.hard ? '하드' : '일반',
+                raidName: item.data.raidName || '레이드',
+                raidPartyName: item.data.raidPartyName
+              }
+            }
+          }
           // 아이템 획득 이벤트 (505) 처리
           if (item.code === '505' && item.data.itemName) {
             return {
               ...item,
-              code: '203', // 아이템 획득 코드로 변경
+              code: '203',
               data: {
                 itemName: item.data.itemName,
                 itemId: item.data.itemId,
@@ -184,25 +197,25 @@ function App() {
               }
             }
           }
-          // 에픽 던전 클리어 이벤트 (209) 처리
-          if (item.code === '209' && item.data.regionName) {
-            return {
-              ...item,
-              code: '202', // 던전 클리어 코드로 변경
-              data: {
-                ...item.data,
-                dungeonName: `${item.data.regionName} 에픽 던전`
-              }
-            }
-          }
           // 던전 클리어 이벤트 (513) 처리
           if (item.code === '513' && item.data.dungeonName) {
             return {
               ...item,
-              code: '202', // 던전 클리어 코드로 변경
+              code: '202',
               data: {
                 ...item.data,
                 dungeonName: `${item.data.dungeonName} 클리어`
+              }
+            }
+          }
+          // 에픽 던전 클리어 이벤트 (209) 처리
+          if (item.code === '209' && item.data.regionName) {
+            return {
+              ...item,
+              code: '202',
+              data: {
+                ...item.data,
+                dungeonName: `${item.data.regionName} 에픽 던전`
               }
             }
           }
@@ -216,14 +229,42 @@ function App() {
               }
             }
           }
-          // 레이드 클리어 이벤트 (201) 처리
-          if (item.code === '201') {
+          // 알 수 없는 이벤트 처리 개선
+          if (item.data.raidName) {
             return {
               ...item,
+              code: '201',
               data: {
                 ...item.data,
                 raidMode: item.data.modeName,
-                raidDifficulty: item.data.hard ? '하드' : '일반'
+                raidDifficulty: item.data.hard ? '하드' : '일반',
+                raidName: item.data.raidName,
+                raidPartyName: item.data.raidPartyName
+              }
+            }
+          }
+          if (item.data.dungeonName) {
+            return {
+              ...item,
+              code: '202',
+              data: {
+                ...item.data,
+                dungeonName: `${item.data.dungeonName} 클리어`
+              }
+            }
+          }
+          if (item.data.itemName) {
+            return {
+              ...item,
+              code: '203',
+              data: {
+                itemName: item.data.itemName,
+                itemId: item.data.itemId,
+                itemGrade: item.data.itemRarity,
+                channelName: item.data.channelName,
+                channelNo: item.data.channelNo,
+                dungeonName: item.data.dungeonName,
+                mistGear: item.data.mistGear
               }
             }
           }
@@ -484,7 +525,7 @@ function App() {
                       style = EVENT_STYLES.level
                       break
                     case '201':
-                      content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''} 클리어`
+                      content = `${item.data.raidName || '레이드'} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''} 클리어`
                       if (item.data.raidPartyName) {
                         content += ` (${item.data.raidPartyName})`
                       }
@@ -520,8 +561,14 @@ function App() {
                       break
                     default:
                       console.log('알 수 없는 타임라인 코드:', item.code, item.data)
-                      // 알 수 없는 코드는 기본 이벤트로 표시
-                      if (item.data.dungeonName) {
+                      // 알 수 없는 코드는 데이터 기반으로 표시
+                      if (item.data.raidName) {
+                        content = `${item.data.raidName} ${item.data.modeName || ''} ${item.data.hard ? '하드' : '일반'} 클리어`
+                        if (item.data.raidPartyName) {
+                          content += ` (${item.data.raidPartyName})`
+                        }
+                        style = EVENT_STYLES.raid
+                      } else if (item.data.dungeonName) {
                         content = `${item.data.dungeonName} 클리어`
                         style = EVENT_STYLES.region
                       } else if (item.data.itemName) {
