@@ -422,9 +422,11 @@ function App() {
                   switch (item.code) {
                     case 'adventureName':
                       content = `모험단명 변경: ${item.data.adventureName}`
+                      style = EVENT_STYLES.level
                       break
                     case 'guildName':
                       content = `길드명 변경: ${item.data.guildName}`
+                      style = EVENT_STYLES.level
                       break
                     case 'jobGrowName':
                       content = `전직: ${item.data.jobGrowName}`
@@ -456,6 +458,7 @@ function App() {
                       break
                     case 'channel':
                       content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
+                      style = EVENT_STYLES.level
                       break
                     default:
                       // 알 수 없는 이벤트 타입은 건너뛰기
@@ -544,7 +547,6 @@ function App() {
                                 padding: '4px'
                               }} 
                               onError={(e) => {
-                                // 이미지 로드 실패시 이미지 요소 숨기기
                                 e.currentTarget.style.display = 'none'
                               }}
                             />
@@ -557,7 +559,7 @@ function App() {
                           flex: 1
                         }}>
                           {content}
-                          {item.data.channelName && (
+                          {item.data.channelName && item.code !== 'channel' && (
                             <div style={{
                               fontSize: '0.9em',
                               color: style?.color ? `${style.color}99` : '#999',
@@ -566,7 +568,7 @@ function App() {
                               {item.data.channelName} {item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}
                             </div>
                           )}
-                          {item.data.dungeonName && (
+                          {item.data.dungeonName && item.code !== 'region' && (
                             <div style={{
                               fontSize: '0.9em',
                               color: style?.color ? `${style.color}99` : '#999',
