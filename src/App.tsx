@@ -170,7 +170,7 @@ function App() {
         .map((item: TimelineItem) => {
           // 아이템 획득 이벤트 (505) 처리
           if (item.code === '505' && item.data.itemName) {
-            const processedItem = {
+            return {
               ...item,
               code: '203', // 아이템 획득 코드로 변경
               data: {
@@ -183,8 +183,6 @@ function App() {
                 mistGear: item.data.mistGear
               }
             }
-            console.log('처리된 아이템 이벤트:', processedItem)
-            return processedItem
           }
           // 에픽 던전 클리어 이벤트 (209) 처리
           if (item.code === '209' && item.data.regionName) {
@@ -220,7 +218,7 @@ function App() {
           }
           return item
         })
-        .filter((item: TimelineItem | null): item is TimelineItem => item !== null) // null 항목 제거 및 타입 가드
+        .filter((item: TimelineItem | null): item is TimelineItem => item !== null)
 
       console.log('처리된 타임라인 데이터:', processedTimeline)
       setTimeline(processedTimeline)
@@ -432,10 +430,7 @@ function App() {
                 gap: '15px'
               }}>
                 {timeline.map((item, index) => {
-                  if (!item.code || !item.data || !item.date) {
-                    console.log('유효하지 않은 타임라인 항목:', item)
-                    return null
-                  }
+                  console.log('렌더링할 타임라인 항목:', item) // 디버깅용 로그 추가
 
                   const date = new Date(item.date)
                   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -500,7 +495,9 @@ function App() {
                       break
                     default:
                       console.log('알 수 없는 타임라인 코드:', item.code, item.data)
-                      return null
+                      // 알 수 없는 코드도 표시
+                      content = `이벤트 코드 ${item.code}`
+                      style = EVENT_STYLES.level
                   }
 
                   if (!content) {
