@@ -142,62 +142,31 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      // 현재 날짜와 30일 전 날짜 계산
       const endDate = new Date()
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 30)
 
-      // 날짜 포맷팅 (YYYYMMDDTHHmm 형식)
       const formatDate = (date: Date) => {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
       const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
-      console.log('타임라인 API 요청:', {
-        url,
-        serverId,
-        characterId,
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate)
-      })
       
       const res = await fetch(url)
-      console.log('타임라인 API 응답:', {
-        status: res.status,
-        statusText: res.statusText,
-        headers: Object.fromEntries(res.headers.entries())
-      })
-      
       if (!res.ok) {
-        const errorText = await res.text()
-        console.error('API 응답 에러:', {
-          status: res.status,
-          statusText: res.statusText,
-          body: errorText
-        })
         throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`)
       }
 
       const data = await res.json()
-      console.log('타임라인 데이터:', data)
+      console.log('타임라인 원본 데이터:', data)
+
+      // API 문서에 따른 데이터 구조 처리
+      const timelineData = data.timeline?.rows || []
       
-      if (data.error) {
-        console.error('API 데이터 에러:', data.error)
-        throw new Error(data.error.message || '타임라인 데이터를 가져오는데 실패했습니다.')
+      if (!Array.isArray(timelineData)) {
+        throw new Error('타임라인 데이터가 올바르지 않습니다.')
       }
 
-      // 타임라인 데이터 처리
-      let timelineData: Timeline[] = []
-      
-      if (data.timeline?.rows) {
-        timelineData = data.timeline.rows
-      } else if (data.rows) {
-        timelineData = data.rows
-      } else if (Array.isArray(data)) {
-        timelineData = data
-      }
-
-      console.log('처리된 타임라인 데이터:', timelineData)
       setTimeline(timelineData)
       
     } catch (err) {
@@ -407,6 +376,8 @@ function App() {
                 gap: '15px'
               }}>
                 {timeline.map((item, index) => {
+                  if (!item.code || !item.data || !item.date) return null;
+
                   const date = new Date(item.date)
                   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
                   const formattedTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
@@ -415,32 +386,33 @@ function App() {
                   let style: ItemStyle | undefined = undefined
                   let itemImage: string | null = null
                   
+                  // API 문서에 따른 타임라인 코드 처리
                   switch (item.code) {
-                    case 'adventureName':
-                      content = `모험단명 변경: ${item.data.adventureName}`
+                    case '101': // 모험단명 변경
+                      content = `모험단명 변경: ${item.data.adventureName || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case 'guildName':
-                      content = `길드명 변경: ${item.data.guildName}`
+                    case '102': // 길드명 변경
+                      content = `길드명 변경: ${item.data.guildName || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case 'jobGrowName':
-                      content = `전직: ${item.data.jobGrowName}`
+                    case '103': // 전직
+                      content = `전직: ${item.data.jobGrowName || ''}`
                       style = EVENT_STYLES.jobGrow
                       break
-                    case 'level':
-                      content = `레벨 달성: ${item.data.level}`
+                    case '104': // 레벨 달성
+                      content = `레벨 달성: ${item.data.level || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case 'raid':
-                      content = `${item.data.raidName} ${item.data.raidMode} ${item.data.raidDifficulty || ''}`
+                    case '201': // 레이드
+                      content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''}`
                       style = EVENT_STYLES.raid
                       break
-                    case 'region':
-                      content = `${item.data.regionName || item.data.dungeonName || ''} 클리어`
+                    case '202': // 던전 클리어
+                      content = `${item.data.dungeonName || ''} 클리어`
                       style = EVENT_STYLES.region
                       break
-                    case 'item':
+                    case '203': // 아이템 획득
                       content = `${item.data.itemName || '아이템 획득'}`
                       if (item.data.itemGrade || item.data.itemRarity) {
                         const grade = item.data.itemGrade || item.data.itemRarity
@@ -452,16 +424,15 @@ function App() {
                         itemImage = `https://img-api.neople.co.kr/df/items/${item.data.itemId}`
                       }
                       break
-                    case 'channel':
+                    case '204': // 채널 이동
                       content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
                       style = EVENT_STYLES.level
                       break
                     default:
-                      // 알 수 없는 이벤트 타입은 건너뛰기
+                      console.log('알 수 없는 타임라인 코드:', item.code)
                       return null
                   }
 
-                  // content가 비어있으면 렌더링하지 않음
                   if (!content) return null
 
                   return (
