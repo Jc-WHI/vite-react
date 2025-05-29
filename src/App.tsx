@@ -63,15 +63,10 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const url = `${API_BASE_URL}/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}&apikey=${API_KEY}`
+      const url = `/api/proxy?path=servers/${serverId}/characters&characterName=${encodeURIComponent(characterName)}`
       console.log('캐릭터 검색 요청:', url)
       
-      const res = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
+      const res = await fetch(url)
       console.log('캐릭터 검색 응답:', {
         status: res.status,
         statusText: res.statusText,
@@ -129,7 +124,7 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const url = `${API_BASE_URL}/servers/${serverId}/characters/${characterId}/timeline?startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10&apikey=${API_KEY}`
+      const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
       console.log('타임라인 API 요청:', {
         url,
         serverId,
@@ -138,12 +133,7 @@ function App() {
         endDate: formatDate(endDate)
       })
       
-      const res = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
+      const res = await fetch(url)
       console.log('타임라인 API 응답:', {
         status: res.status,
         statusText: res.statusText,
