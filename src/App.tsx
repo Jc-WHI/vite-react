@@ -37,14 +37,43 @@ interface ItemStyle {
 
 const ITEM_GRADES: Record<string, ItemStyle> = {
   '레전더리': {
-    backgroundColor: '#ffa500',
-    color: '#fff',
+    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+    color: '#ff8c00',
     borderColor: '#ff8c00'
   },
   '에픽': {
-    backgroundColor: '#ff8c00',
-    color: '#fff',
+    backgroundColor: 'rgba(255, 140, 0, 0.1)',
+    color: '#ff6b00',
     borderColor: '#ff6b00'
+  },
+  '유니크': {
+    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+    color: '#ff4500',
+    borderColor: '#ff4500'
+  }
+}
+
+// 타임라인 이벤트 타입별 스타일 정의
+const EVENT_STYLES: Record<string, ItemStyle> = {
+  'raid': {
+    backgroundColor: 'rgba(100, 108, 255, 0.1)',
+    color: '#646cff',
+    borderColor: '#646cff'
+  },
+  'region': {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    color: '#4caf50',
+    borderColor: '#4caf50'
+  },
+  'level': {
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    color: '#2196f3',
+    borderColor: '#2196f3'
+  },
+  'jobGrow': {
+    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+    color: '#9c27b0',
+    borderColor: '#9c27b0'
   }
 }
 
@@ -383,34 +412,51 @@ function App() {
               }}>
                 {timeline.map((item, index) => {
                   const date = new Date(item.date)
-                  const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+                  const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                  const formattedTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
                   
                   let content = ''
                   let style: ItemStyle | undefined = undefined
                   let itemImage: string | null = null
+                  let eventType = ''
                   
                   switch (item.code) {
                     case 'adventureName':
                       content = `모험단명 변경: ${item.data.adventureName}`
+                      eventType = 'adventure'
                       break
                     case 'guildName':
                       content = `길드명 변경: ${item.data.guildName}`
+                      eventType = 'guild'
                       break
                     case 'jobGrowName':
                       content = `전직: ${item.data.jobGrowName}`
+                      eventType = 'jobGrow'
+                      style = EVENT_STYLES.jobGrow
                       break
                     case 'level':
                       content = `레벨 달성: ${item.data.level}`
+                      eventType = 'level'
+                      style = EVENT_STYLES.level
                       break
                     case 'raid':
-                      content = `${item.data.raidName} ${item.data.raidMode} ${item.data.raidDifficulty}`
+                      content = `${item.data.raidName} ${item.data.raidMode} ${item.data.raidDifficulty || ''}`
+                      eventType = 'raid'
+                      style = EVENT_STYLES.raid
                       break
-                    case 'dungeon':
-                      content = `${item.data.dungeonName} 클리어`
+                    case 'region':
+                      content = `${item.data.regionName} 클리어`
+                      eventType = 'region'
+                      style = EVENT_STYLES.region
                       break
                     case 'item':
-                      content = `${item.data.itemName} (${item.data.itemGrade || item.data.itemRarity}) 획득 - ${item.data.channelName || ''}`
-                      style = item.data.itemGrade ? ITEM_GRADES[item.data.itemGrade] : (item.data.itemRarity ? ITEM_GRADES[item.data.itemRarity] : undefined)
+                      content = `${item.data.itemName}`
+                      if (item.data.itemGrade || item.data.itemRarity) {
+                        const grade = item.data.itemGrade || item.data.itemRarity
+                        if (grade && grade in ITEM_GRADES) {
+                          style = ITEM_GRADES[grade]
+                        }
+                      }
                       if (item.data.itemId) {
                         itemImage = `https://img-api.neople.co.kr/df/items/${item.data.itemId}`
                       }
@@ -421,34 +467,107 @@ function App() {
 
                   return (
                     <div key={index} style={{ 
-                      padding: '15px', 
+                      padding: '16px',
                       border: '1px solid #eee',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       backgroundColor: style?.backgroundColor || '#f8f9fa',
                       color: style?.color || '#333',
                       borderColor: style?.borderColor || '#eee',
                       transition: 'all 0.2s',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '16px'
+                      gap: '16px',
+                      marginBottom: '12px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                      position: 'relative',
+                      overflow: 'hidden'
                     }}>
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '4px',
+                        backgroundColor: style?.borderColor || '#eee'
+                      }} />
+                      
                       <div style={{ 
-                        fontSize: '0.9em', 
-                        color: style?.color ? 'rgba(255,255,255,0.8)' : '#666',
-                        marginBottom: '5px',
-                        minWidth: '110px',
-                        textAlign: 'right'
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        minWidth: '120px',
+                        paddingRight: '16px',
+                        borderRight: '1px solid #eee'
                       }}>
-                        {formattedDate}
+                        <div style={{ 
+                          fontSize: '0.9em',
+                          color: style?.color ? style.color : '#666',
+                          fontWeight: '500'
+                        }}>
+                          {formattedDate}
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.8em',
+                          color: style?.color ? `${style.color}99` : '#999',
+                          marginTop: '4px'
+                        }}>
+                          {formattedTime}
+                        </div>
                       </div>
-                      {itemImage && (
-                        <img src={itemImage} alt={item.data.itemName} style={{ width: 48, height: 48, borderRadius: 8, border: '1px solid #ddd', background: '#fff' }} />
-                      )}
-                      <div style={{ 
-                        fontSize: '1.1em',
-                        fontWeight: '500'
+
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px',
+                        flex: 1
                       }}>
-                        {content}
+                        {itemImage && (
+                          <div style={{
+                            position: 'relative',
+                            width: '48px',
+                            height: '48px',
+                            flexShrink: 0
+                          }}>
+                            <img 
+                              src={itemImage} 
+                              alt={item.data.itemName} 
+                              style={{ 
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '8px',
+                                border: '1px solid #ddd',
+                                background: '#fff',
+                                objectFit: 'contain'
+                              }} 
+                            />
+                          </div>
+                        )}
+                        
+                        <div style={{ 
+                          fontSize: '1.1em',
+                          fontWeight: '500',
+                          flex: 1
+                        }}>
+                          {content}
+                          {item.data.channelName && (
+                            <div style={{
+                              fontSize: '0.9em',
+                              color: style?.color ? `${style.color}99` : '#999',
+                              marginTop: '4px'
+                            }}>
+                              {item.data.channelName} {item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}
+                            </div>
+                          )}
+                          {item.data.dungeonName && (
+                            <div style={{
+                              fontSize: '0.9em',
+                              color: style?.color ? `${style.color}99` : '#999',
+                              marginTop: '4px'
+                            }}>
+                              {item.data.dungeonName}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )
