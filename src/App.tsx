@@ -178,16 +178,6 @@ function App() {
         throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`)
       }
 
-      const contentType = res.headers.get('content-type')
-      if (!contentType?.includes('application/json')) {
-        const text = await res.text()
-        console.error('잘못된 응답 형식:', {
-          contentType,
-          body: text.substring(0, 200) // 처음 200자만 로깅
-        })
-        throw new Error('서버가 JSON 응답을 반환하지 않았습니다.')
-      }
-
       const data = await res.json()
       console.log('타임라인 데이터:', data)
       
@@ -196,21 +186,19 @@ function App() {
         throw new Error(data.error.message || '타임라인 데이터를 가져오는데 실패했습니다.')
       }
 
-      // 타임라인 데이터가 timeline.rows에 있는 경우
-      if (data.timeline?.rows) {
-        setTimeline(data.timeline.rows)
-        return
-      }
+      // 타임라인 데이터 처리
+      let timelineData: Timeline[] = []
       
-      // 타임라인 데이터가 rows 필드에 있는 경우
-      if (data.rows) {
-        setTimeline(data.rows)
-        return
+      if (data.timeline?.rows) {
+        timelineData = data.timeline.rows
+      } else if (data.rows) {
+        timelineData = data.rows
+      } else if (Array.isArray(data)) {
+        timelineData = data
       }
 
-      // 타임라인 데이터가 없는 경우
-      console.log('타임라인 데이터 없음:', data)
-      setTimeline([])
+      console.log('처리된 타임라인 데이터:', timelineData)
+      setTimeline(timelineData)
       
     } catch (err) {
       console.error('타임라인 에러:', err)
@@ -403,6 +391,14 @@ function App() {
                 color: '#666'
               }}>
                 타임라인 로딩 중...
+              </div>
+            ) : error ? (
+              <div style={{ 
+                textAlign: 'center',
+                padding: '40px',
+                color: '#dc3545'
+              }}>
+                {error}
               </div>
             ) : timeline.length > 0 ? (
               <div style={{ 
