@@ -9,7 +9,12 @@ export default defineConfig({
       '/api': {
         target: 'https://api.neople.co.kr/df',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => {
+          const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
+          const newPath = path.replace(/^\/api/, '')
+          const separator = newPath.includes('?') ? '&' : '?'
+          return `${newPath}${separator}apikey=${apiKey}`
+        }
       }
     }
   }
