@@ -46,6 +46,9 @@ const ITEM_GRADES: Record<string, ItemStyle> = {
   }
 }
 
+const API_KEY = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
+const API_BASE_URL = 'https://api.neople.co.kr/df'
+
 function App() {
   const [serverId, setServerId] = useState('cain')
   const [characterName, setCharacterName] = useState('')
@@ -60,10 +63,15 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const url = `/api/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}`
+      const url = `${API_BASE_URL}/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}&apikey=${API_KEY}`
       console.log('캐릭터 검색 요청:', url)
       
-      const res = await fetch(url)
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
       console.log('캐릭터 검색 응답:', {
         status: res.status,
         statusText: res.statusText,
@@ -121,7 +129,7 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const url = `/api/servers/${serverId}/characters/${characterId}/timeline?startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
+      const url = `${API_BASE_URL}/servers/${serverId}/characters/${characterId}/timeline?startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10&apikey=${API_KEY}`
       console.log('타임라인 API 요청:', {
         url,
         serverId,
@@ -130,7 +138,12 @@ function App() {
         endDate: formatDate(endDate)
       })
       
-      const res = await fetch(url)
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
       console.log('타임라인 API 응답:', {
         status: res.status,
         statusText: res.statusText,
