@@ -166,59 +166,61 @@ function App() {
       }
 
       // 타임라인 데이터 정제
-      const processedTimeline = data.timeline.rows.map((item: TimelineItem) => {
-        // 아이템 획득 이벤트 (505) 처리
-        if (item.code === '505' && item.data.itemName) {
-          const processedItem = {
-            ...item,
-            code: '203', // 아이템 획득 코드로 변경
-            data: {
-              itemName: item.data.itemName,
-              itemId: item.data.itemId,
-              itemGrade: item.data.itemRarity,
-              channelName: item.data.channelName,
-              channelNo: item.data.channelNo,
-              dungeonName: item.data.dungeonName,
-              mistGear: item.data.mistGear
+      const processedTimeline = data.timeline.rows
+        .map((item: TimelineItem) => {
+          // 아이템 획득 이벤트 (505) 처리
+          if (item.code === '505' && item.data.itemName) {
+            const processedItem = {
+              ...item,
+              code: '203', // 아이템 획득 코드로 변경
+              data: {
+                itemName: item.data.itemName,
+                itemId: item.data.itemId,
+                itemGrade: item.data.itemRarity,
+                channelName: item.data.channelName,
+                channelNo: item.data.channelNo,
+                dungeonName: item.data.dungeonName,
+                mistGear: item.data.mistGear
+              }
+            }
+            console.log('처리된 아이템 이벤트:', processedItem)
+            return processedItem
+          }
+          // 에픽 던전 클리어 이벤트 (209) 처리
+          if (item.code === '209' && item.data.regionName) {
+            return {
+              ...item,
+              code: '202', // 던전 클리어 코드로 변경
+              data: {
+                ...item.data,
+                dungeonName: `${item.data.regionName} 에픽 던전`
+              }
             }
           }
-          console.log('처리된 아이템 이벤트:', processedItem)
-          return processedItem
-        }
-        // 에픽 던전 클리어 이벤트 (209) 처리
-        if (item.code === '209' && item.data.regionName) {
-          return {
-            ...item,
-            code: '202', // 던전 클리어 코드로 변경
-            data: {
-              ...item.data,
-              dungeonName: `${item.data.regionName} 에픽 던전`
+          // 길드 관련 이벤트 처리
+          if (['405', '507'].includes(item.code)) {
+            return {
+              ...item,
+              data: {
+                ...item.data,
+                guildName: item.data.guildName || '길드'
+              }
             }
           }
-        }
-        // 길드 관련 이벤트 처리
-        if (['405', '507'].includes(item.code)) {
-          return {
-            ...item,
-            data: {
-              ...item.data,
-              guildName: item.data.guildName || '길드'
+          // 레이드 클리어 이벤트 (201) 처리
+          if (item.code === '201') {
+            return {
+              ...item,
+              data: {
+                ...item.data,
+                raidMode: item.data.modeName,
+                raidDifficulty: item.data.hard ? '하드' : '일반'
+              }
             }
           }
-        }
-        // 레이드 클리어 이벤트 (201) 처리
-        if (item.code === '201') {
-          return {
-            ...item,
-            data: {
-              ...item.data,
-              raidMode: item.data.modeName,
-              raidDifficulty: item.data.hard ? '하드' : '일반'
-            }
-          }
-        }
-        return item
-      }).filter(item => item !== null) // null 항목 제거
+          return item
+        })
+        .filter((item: TimelineItem | null): item is TimelineItem => item !== null) // null 항목 제거 및 타입 가드
 
       console.log('처리된 타임라인 데이터:', processedTimeline)
       setTimeline(processedTimeline)
@@ -430,7 +432,10 @@ function App() {
                 gap: '15px'
               }}>
                 {timeline.map((item, index) => {
-                  if (!item.code || !item.data || !item.date) return null;
+                  if (!item.code || !item.data || !item.date) {
+                    console.log('유효하지 않은 타임라인 항목:', item)
+                    return null
+                  }
 
                   const date = new Date(item.date)
                   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -460,6 +465,9 @@ function App() {
                       break
                     case '201': // 레이드 클리어
                       content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''} 클리어`
+                      if (item.data.raidPartyName) {
+                        content += ` (${item.data.raidPartyName})`
+                      }
                       style = EVENT_STYLES.raid
                       break
                     case '202': // 던전 클리어
@@ -468,9 +476,9 @@ function App() {
                       break
                     case '203': // 아이템 획득
                       content = `${item.data.itemName || '아이템 획득'}`
-                      if (item.data.itemGrade || item.data.itemRarity) {
-                        const grade = item.data.itemGrade || item.data.itemRarity
-                        if (grade && grade in ITEM_GRADES) {
+                      if (item.data.itemGrade) {
+                        const grade = item.data.itemGrade
+                        if (grade in ITEM_GRADES) {
                           style = ITEM_GRADES[grade]
                         }
                       }
@@ -482,20 +490,12 @@ function App() {
                       content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '209': // 에픽 던전 클리어
-                      content = `${item.data.dungeonName || ''} 에픽 던전 클리어`
-                      style = EVENT_STYLES.region
-                      break
                     case '405': // 길드 가입
-                      content = `${item.data.guildName || ''} 길드 가입`
-                      style = EVENT_STYLES.level
-                      break
-                    case '505': // 길드 탈퇴
-                      content = `${item.data.guildName || ''} 길드 탈퇴`
+                      content = `${item.data.guildName || '길드'} 가입`
                       style = EVENT_STYLES.level
                       break
                     case '507': // 길드 추방
-                      content = `${item.data.guildName || ''} 길드 추방`
+                      content = `${item.data.guildName || '길드'} 추방`
                       style = EVENT_STYLES.level
                       break
                     default:
@@ -503,7 +503,10 @@ function App() {
                       return null
                   }
 
-                  if (!content) return null
+                  if (!content) {
+                    console.log('내용이 없는 타임라인 항목:', item)
+                    return null
+                  }
 
                   return (
                     <div key={index} style={{ 
