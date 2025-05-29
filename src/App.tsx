@@ -160,14 +160,60 @@ function App() {
       const data = await res.json()
       console.log('타임라인 원본 데이터:', data)
 
-      // API 문서에 따른 데이터 구조 처리
-      const timelineData = data.timeline?.rows || []
-      
-      if (!Array.isArray(timelineData)) {
+      // API 응답 구조에 맞게 데이터 처리
+      if (!data.timeline || !Array.isArray(data.timeline.rows)) {
         throw new Error('타임라인 데이터가 올바르지 않습니다.')
       }
 
-      setTimeline(timelineData)
+      // 타임라인 데이터 정제
+      const processedTimeline = data.timeline.rows.map((item: any) => {
+        // 아이템 획득 이벤트 (505) 처리
+        if (item.code === '505' && item.data.itemName) {
+          return {
+            ...item,
+            code: '203', // 아이템 획득 코드로 변경
+            data: {
+              ...item.data,
+              itemGrade: item.data.itemRarity // itemRarity를 itemGrade로 매핑
+            }
+          }
+        }
+        // 에픽 던전 클리어 이벤트 (209) 처리
+        if (item.code === '209' && item.data.regionName) {
+          return {
+            ...item,
+            code: '202', // 던전 클리어 코드로 변경
+            data: {
+              ...item.data,
+              dungeonName: `${item.data.regionName} 에픽 던전`
+            }
+          }
+        }
+        // 길드 관련 이벤트 처리
+        if (['405', '507'].includes(item.code)) {
+          return {
+            ...item,
+            data: {
+              ...item.data,
+              guildName: item.data.guildName || '길드'
+            }
+          }
+        }
+        // 레이드 클리어 이벤트 (201) 처리
+        if (item.code === '201') {
+          return {
+            ...item,
+            data: {
+              ...item.data,
+              raidMode: item.data.modeName,
+              raidDifficulty: item.data.hard ? '하드' : '일반'
+            }
+          }
+        }
+        return item
+      })
+
+      setTimeline(processedTimeline)
       
     } catch (err) {
       console.error('타임라인 에러:', err)
