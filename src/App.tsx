@@ -52,23 +52,22 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      // API 키 확인
-      const apiKey = import.meta.env.VITE_NEOPLE_API_KEY
-      if (!apiKey) {
-        console.error('API 키가 설정되지 않았습니다. 환경변수를 확인해주세요.')
-        throw new Error('API 키가 설정되지 않았습니다. 환경변수를 확인해주세요.')
-      }
-
+      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'  // 직접 API 키 설정
+      
       // API 요청 URL 구성
-      const baseUrl = import.meta.env.PROD 
-        ? 'https://api.neople.co.kr/df'  // 프로덕션 환경
-        : '/api'                         // 개발 환경 (Vite 프록시 사용)
-
+      const baseUrl = 'https://api.neople.co.kr/df'  // 직접 API 서버 사용
       const url = `${baseUrl}/servers/${serverId}/characters/${characterId}/timeline?apikey=${apiKey}&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
       
-      console.log('API 요청 URL:', url) // 디버깅용 (개발 환경에서만 사용)
+      console.log('타임라인 API 요청:', {
+        url,
+        serverId,
+        characterId,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate)
+      })
       
       const res = await fetch(url)
+      console.log('API 응답 상태:', res.status, res.statusText)
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}))
@@ -81,12 +80,20 @@ function App() {
       }
 
       const data = await res.json()
+      console.log('타임라인 데이터:', data)
+      
       if (data.error) {
         console.error('API 데이터 에러:', data.error)
         throw new Error(data.error.message || '타임라인 데이터를 가져오는데 실패했습니다.')
       }
       
-      setTimeline(data.rows || [])
+      if (!data.rows) {
+        console.log('타임라인 데이터 없음:', data)
+        setTimeline([])
+        return
+      }
+      
+      setTimeline(data.rows)
     } catch (err) {
       console.error('타임라인 에러:', err)
       setError(err instanceof Error ? err.message : '타임라인 정보를 불러오는 중 오류가 발생했습니다.')
