@@ -418,35 +418,28 @@ function App() {
                   let content = ''
                   let style: ItemStyle | undefined = undefined
                   let itemImage: string | null = null
-                  let eventType = ''
                   
                   switch (item.code) {
                     case 'adventureName':
                       content = `모험단명 변경: ${item.data.adventureName}`
-                      eventType = 'adventure'
                       break
                     case 'guildName':
                       content = `길드명 변경: ${item.data.guildName}`
-                      eventType = 'guild'
                       break
                     case 'jobGrowName':
                       content = `전직: ${item.data.jobGrowName}`
-                      eventType = 'jobGrow'
                       style = EVENT_STYLES.jobGrow
                       break
                     case 'level':
                       content = `레벨 달성: ${item.data.level}`
-                      eventType = 'level'
                       style = EVENT_STYLES.level
                       break
                     case 'raid':
                       content = `${item.data.raidName} ${item.data.raidMode} ${item.data.raidDifficulty || ''}`
-                      eventType = 'raid'
                       style = EVENT_STYLES.raid
                       break
                     case 'region':
                       content = `${item.data.regionName} 클리어`
-                      eventType = 'region'
                       style = EVENT_STYLES.region
                       break
                     case 'item':
