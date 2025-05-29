@@ -27,7 +27,13 @@ interface Character {
 }
 
 // 아이템 등급별 스타일 정의
-const ITEM_GRADES = {
+interface ItemStyle {
+  backgroundColor: string;
+  color: string;
+  borderColor: string;
+}
+
+const ITEM_GRADES: Record<string, ItemStyle> = {
   '레전더리': {
     backgroundColor: '#ffa500',
     color: '#fff',
@@ -38,7 +44,7 @@ const ITEM_GRADES = {
     color: '#fff',
     borderColor: '#ff6b00'
   }
-} as const
+}
 
 function App() {
   const [serverId, setServerId] = useState('cain')
@@ -251,11 +257,15 @@ function App() {
                 marginBottom: '15px',
                 backgroundColor: 'white',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s',
-                ':hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                }
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
               }}
               onClick={() => handleCharacterClick(char)}
             >
@@ -325,7 +335,7 @@ function App() {
                   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
                   
                   let content = ''
-                  let style = {}
+                  let style: ItemStyle | undefined = undefined
                   
                   switch (item.code) {
                     case 'adventureName':
@@ -348,7 +358,7 @@ function App() {
                       break
                     case 'item':
                       content = `${item.data.itemName} (${item.data.itemGrade}) 획득 - ${item.data.channelName}`
-                      style = ITEM_GRADES[item.data.itemGrade as keyof typeof ITEM_GRADES] || {}
+                      style = item.data.itemGrade ? ITEM_GRADES[item.data.itemGrade] : undefined
                       break
                     default:
                       content = JSON.stringify(item.data, null, 2)
@@ -359,14 +369,14 @@ function App() {
                       padding: '15px', 
                       border: '1px solid #eee',
                       borderRadius: '8px',
-                      backgroundColor: style.backgroundColor || '#f8f9fa',
-                      color: style.color || '#333',
-                      borderColor: style.borderColor || '#eee',
+                      backgroundColor: style?.backgroundColor || '#f8f9fa',
+                      color: style?.color || '#333',
+                      borderColor: style?.borderColor || '#eee',
                       transition: 'all 0.2s'
                     }}>
                       <div style={{ 
                         fontSize: '0.9em', 
-                        color: style.color ? 'rgba(255,255,255,0.8)' : '#666',
+                        color: style?.color ? 'rgba(255,255,255,0.8)' : '#666',
                         marginBottom: '5px'
                       }}>
                         {formattedDate}
