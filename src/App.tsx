@@ -396,14 +396,18 @@ function App() {
             border: '1px solid #ddd',
             borderRadius: '12px',
             backgroundColor: 'white',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: 'calc(100vh - 200px)'
           }}>
             <h2 style={{ 
               marginBottom: '20px',
               color: '#333',
               fontSize: '1.5em',
               borderBottom: '2px solid #646cff',
-              paddingBottom: '10px'
+              paddingBottom: '10px',
+              flexShrink: 0
             }}>
               {selectedCharacter.characterName}의 타임라인
             </h2>
@@ -411,7 +415,8 @@ function App() {
               <div style={{ 
                 textAlign: 'center',
                 padding: '40px',
-                color: '#666'
+                color: '#666',
+                flexShrink: 0
               }}>
                 타임라인 로딩 중...
               </div>
@@ -419,7 +424,8 @@ function App() {
               <div style={{ 
                 textAlign: 'center',
                 padding: '40px',
-                color: '#dc3545'
+                color: '#dc3545',
+                flexShrink: 0
               }}>
                 {error}
               </div>
@@ -427,10 +433,14 @@ function App() {
               <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: '15px'
+                gap: '15px',
+                overflowY: 'auto',
+                paddingRight: '10px',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#888 #f1f1f1'
               }}>
                 {timeline.map((item, index) => {
-                  console.log('렌더링할 타임라인 항목:', item) // 디버깅용 로그 추가
+                  console.log('렌더링할 타임라인 항목:', item)
 
                   const date = new Date(item.date)
                   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -440,36 +450,35 @@ function App() {
                   let style: ItemStyle | undefined = undefined
                   let itemImage: string | null = null
                   
-                  // API 문서에 따른 타임라인 코드 처리
                   switch (item.code) {
-                    case '101': // 모험단명 변경
+                    case '101':
                       content = `모험단명 변경: ${item.data.adventureName || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '102': // 길드명 변경
+                    case '102':
                       content = `길드명 변경: ${item.data.guildName || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '103': // 전직
+                    case '103':
                       content = `전직: ${item.data.jobGrowName || ''}`
                       style = EVENT_STYLES.jobGrow
                       break
-                    case '104': // 레벨 달성
+                    case '104':
                       content = `레벨 달성: ${item.data.level || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '201': // 레이드 클리어
+                    case '201':
                       content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''} 클리어`
                       if (item.data.raidPartyName) {
                         content += ` (${item.data.raidPartyName})`
                       }
                       style = EVENT_STYLES.raid
                       break
-                    case '202': // 던전 클리어
+                    case '202':
                       content = `${item.data.dungeonName || ''} 클리어`
                       style = EVENT_STYLES.region
                       break
-                    case '203': // 아이템 획득
+                    case '203':
                       content = `${item.data.itemName || '아이템 획득'}`
                       if (item.data.itemGrade) {
                         const grade = item.data.itemGrade
@@ -481,21 +490,20 @@ function App() {
                         itemImage = `https://img-api.neople.co.kr/df/items/${item.data.itemId}`
                       }
                       break
-                    case '204': // 채널 이동
+                    case '204':
                       content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '405': // 길드 가입
+                    case '405':
                       content = `${item.data.guildName || '길드'} 가입`
                       style = EVENT_STYLES.level
                       break
-                    case '507': // 길드 추방
+                    case '507':
                       content = `${item.data.guildName || '길드'} 추방`
                       style = EVENT_STYLES.level
                       break
                     default:
                       console.log('알 수 없는 타임라인 코드:', item.code, item.data)
-                      // 알 수 없는 코드도 표시
                       content = `이벤트 코드 ${item.code}`
                       style = EVENT_STYLES.level
                   }
