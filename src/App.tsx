@@ -404,8 +404,8 @@ function App() {
                       content = `레벨 달성: ${item.data.level || ''}`
                       style = EVENT_STYLES.level
                       break
-                    case '201': // 레이드
-                      content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''}`
+                    case '201': // 레이드 클리어
+                      content = `${item.data.raidName || ''} ${item.data.raidMode || ''} ${item.data.raidDifficulty || ''} 클리어`
                       style = EVENT_STYLES.raid
                       break
                     case '202': // 던전 클리어
@@ -428,8 +428,24 @@ function App() {
                       content = `${item.data.channelName || ''} ${item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}`
                       style = EVENT_STYLES.level
                       break
+                    case '209': // 에픽 던전 클리어
+                      content = `${item.data.dungeonName || ''} 에픽 던전 클리어`
+                      style = EVENT_STYLES.region
+                      break
+                    case '405': // 길드 가입
+                      content = `${item.data.guildName || ''} 길드 가입`
+                      style = EVENT_STYLES.level
+                      break
+                    case '505': // 길드 탈퇴
+                      content = `${item.data.guildName || ''} 길드 탈퇴`
+                      style = EVENT_STYLES.level
+                      break
+                    case '507': // 길드 추방
+                      content = `${item.data.guildName || ''} 길드 추방`
+                      style = EVENT_STYLES.level
+                      break
                     default:
-                      console.log('알 수 없는 타임라인 코드:', item.code)
+                      console.log('알 수 없는 타임라인 코드:', item.code, item.data)
                       return null
                   }
 
