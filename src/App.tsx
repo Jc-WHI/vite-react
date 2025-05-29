@@ -60,13 +60,48 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const url = `/api/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}`;
+      const url = `/api/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}`
+      console.log('캐릭터 검색 요청:', url)
+      
       const res = await fetch(url)
+      console.log('캐릭터 검색 응답:', {
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries())
+      })
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('API 응답 에러:', {
+          status: res.status,
+          statusText: res.statusText,
+          body: errorText
+        })
+        throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`)
+      }
+
+      const contentType = res.headers.get('content-type')
+      if (!contentType?.includes('application/json')) {
+        const text = await res.text()
+        console.error('잘못된 응답 형식:', {
+          contentType,
+          body: text.substring(0, 200) // 처음 200자만 로깅
+        })
+        throw new Error('서버가 JSON 응답을 반환하지 않았습니다.')
+      }
+
       const data = await res.json()
+      console.log('캐릭터 검색 결과:', data)
+      
+      if (data.error) {
+        throw new Error(data.error.message || '캐릭터 검색 중 오류가 발생했습니다.')
+      }
+
       setCharacters(data.rows || [])
     } catch (err) {
       console.error('캐릭터 검색 에러:', err)
-      setError('캐릭터 검색 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : '캐릭터 검색 중 오류가 발생했습니다.')
+      setCharacters([])
     } finally {
       setIsLoading(false)
     }
@@ -87,7 +122,6 @@ function App() {
       }
 
       const url = `/api/servers/${serverId}/characters/${characterId}/timeline?startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
-      
       console.log('타임라인 API 요청:', {
         url,
         serverId,
@@ -97,16 +131,30 @@ function App() {
       })
       
       const res = await fetch(url)
-      console.log('API 응답 상태:', res.status, res.statusText)
+      console.log('타임라인 API 응답:', {
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries())
+      })
       
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}))
+        const errorText = await res.text()
         console.error('API 응답 에러:', {
           status: res.status,
           statusText: res.statusText,
-          data: errorData
+          body: errorText
         })
         throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`)
+      }
+
+      const contentType = res.headers.get('content-type')
+      if (!contentType?.includes('application/json')) {
+        const text = await res.text()
+        console.error('잘못된 응답 형식:', {
+          contentType,
+          body: text.substring(0, 200) // 처음 200자만 로깅
+        })
+        throw new Error('서버가 JSON 응답을 반환하지 않았습니다.')
       }
 
       const data = await res.json()
@@ -136,6 +184,7 @@ function App() {
     } catch (err) {
       console.error('타임라인 에러:', err)
       setError(err instanceof Error ? err.message : '타임라인 정보를 불러오는 중 오류가 발생했습니다.')
+      setTimeline([])
     } finally {
       setIsLoading(false)
     }
