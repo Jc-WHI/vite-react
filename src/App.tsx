@@ -328,11 +328,14 @@ function App() {
         display: 'flex', 
         gap: '30px', 
         marginTop: '20px',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        minHeight: 'calc(100vh - 200px)'
       }}>
         <div style={{ 
           flex: '1 1 300px',
-          minWidth: '300px'
+          minWidth: '300px',
+          maxHeight: 'calc(100vh - 200px)',
+          overflowY: 'auto'
         }}>
           {characters.map((char) => (
             <div 
@@ -390,8 +393,8 @@ function App() {
 
         {selectedCharacter && (
           <div style={{ 
-            flex: '2 1 500px',
-            minWidth: '500px',
+            flex: '2 1 600px',
+            minWidth: '600px',
             padding: '25px',
             border: '1px solid #ddd',
             borderRadius: '12px',
@@ -399,7 +402,8 @@ function App() {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             display: 'flex',
             flexDirection: 'column',
-            maxHeight: 'calc(100vh - 200px)'
+            height: 'calc(100vh - 200px)',
+            overflow: 'hidden'
           }}>
             <h2 style={{ 
               marginBottom: '20px',
@@ -437,7 +441,8 @@ function App() {
                 overflowY: 'auto',
                 paddingRight: '10px',
                 scrollbarWidth: 'thin',
-                scrollbarColor: '#888 #f1f1f1'
+                scrollbarColor: '#888 #f1f1f1',
+                flex: 1
               }}>
                 {timeline.map((item, index) => {
                   console.log('렌더링할 타임라인 항목:', item)
@@ -523,12 +528,13 @@ function App() {
                       borderColor: style?.borderColor || '#eee',
                       transition: 'all 0.2s',
                       display: 'flex',
-                      alignItems: 'center',
+                      alignItems: 'flex-start',
                       gap: '16px',
                       marginBottom: '12px',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                       position: 'relative',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      minHeight: '80px'
                     }}>
                       <div style={{
                         position: 'absolute',
@@ -539,13 +545,14 @@ function App() {
                         backgroundColor: style?.borderColor || '#eee'
                       }} />
                       
-                      <div style={{ 
+                      <div style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-end',
                         minWidth: '120px',
                         paddingRight: '16px',
-                        borderRight: '1px solid #eee'
+                        borderRight: '1px solid #eee',
+                        flexShrink: 0
                       }}>
                         <div style={{ 
                           fontSize: '0.9em',
@@ -565,9 +572,10 @@ function App() {
 
                       <div style={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         gap: '16px',
-                        flex: 1
+                        flex: 1,
+                        minWidth: 0
                       }}>
                         {itemImage && (
                           <div style={{
@@ -601,7 +609,9 @@ function App() {
                         <div style={{ 
                           fontSize: '1.1em',
                           fontWeight: '500',
-                          flex: 1
+                          flex: 1,
+                          minWidth: 0,
+                          wordBreak: 'break-word'
                         }}>
                           {content}
                           {item.data.channelName && item.code !== '204' && (
