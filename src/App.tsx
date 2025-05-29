@@ -1,22 +1,22 @@
 import { useState } from 'react'
 import './App.css'
 
-interface Timeline {
+interface TimelineItem {
   code: string;
   data: {
-    adventureName?: string;
-    guildName?: string;
-    jobGrowName?: string;
-    level?: number;
-    raidName?: string;
-    raidMode?: string;
-    raidDifficulty?: string;
-    dungeonName?: string;
     itemName?: string;
+    itemId?: string;
     itemGrade?: string;
     channelName?: string;
-    itemId?: string;
-    itemRarity?: string;
+    channelNo?: number;
+    dungeonName?: string;
+    mistGear?: boolean;
+    regionName?: string;
+    guildName?: string;
+    modeName?: string;
+    hard?: boolean;
+    raidName?: string;
+    raidPartyName?: string;
     [key: string]: any;
   };
   date: string;
@@ -82,7 +82,7 @@ function App() {
   const [characterName, setCharacterName] = useState('')
   const [characters, setCharacters] = useState<Character[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
-  const [timeline, setTimeline] = useState<Timeline[]>([])
+  const [timeline, setTimeline] = useState<TimelineItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -166,17 +166,24 @@ function App() {
       }
 
       // 타임라인 데이터 정제
-      const processedTimeline = data.timeline.rows.map((item: any) => {
+      const processedTimeline = data.timeline.rows.map((item: TimelineItem) => {
         // 아이템 획득 이벤트 (505) 처리
         if (item.code === '505' && item.data.itemName) {
-          return {
+          const processedItem = {
             ...item,
             code: '203', // 아이템 획득 코드로 변경
             data: {
-              ...item.data,
-              itemGrade: item.data.itemRarity // itemRarity를 itemGrade로 매핑
+              itemName: item.data.itemName,
+              itemId: item.data.itemId,
+              itemGrade: item.data.itemRarity,
+              channelName: item.data.channelName,
+              channelNo: item.data.channelNo,
+              dungeonName: item.data.dungeonName,
+              mistGear: item.data.mistGear
             }
           }
+          console.log('처리된 아이템 이벤트:', processedItem)
+          return processedItem
         }
         // 에픽 던전 클리어 이벤트 (209) 처리
         if (item.code === '209' && item.data.regionName) {
@@ -211,8 +218,9 @@ function App() {
           }
         }
         return item
-      })
+      }).filter(item => item !== null) // null 항목 제거
 
+      console.log('처리된 타임라인 데이터:', processedTimeline)
       setTimeline(processedTimeline)
       
     } catch (err) {
