@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import './App.css'
 
 interface TimelineItem {
@@ -85,6 +85,91 @@ function App() {
   const [timeline, setTimeline] = useState<TimelineItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const timelineContainerRef = useRef<HTMLDivElement>(null)
+  const ITEMS_PER_PAGE = 20
+
+  // 스크롤 이벤트 핸들러
+  const handleScroll = useCallback(() => {
+    if (!timelineContainerRef.current || isLoadingMore || !hasMore) return
+
+    const container = timelineContainerRef.current
+    const scrollBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+
+    if (scrollBottom < 100) { // 스크롤이 하단 100px 이내로 왔을 때
+      loadMoreTimeline()
+    }
+  }, [isLoadingMore, hasMore])
+
+  // 스크롤 이벤트 리스너 등록
+  useEffect(() => {
+    const container = timelineContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+      return () => container.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
+
+  const loadMoreTimeline = async () => {
+    if (!selectedCharacter || isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 30)
+
+      const formatDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0]
+      }
+
+      const url = `/api/proxy?path=servers/${serverId}/characters/${selectedCharacter.characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=${ITEMS_PER_PAGE}&offset=${(page - 1) * ITEMS_PER_PAGE}`
+      
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`)
+      }
+
+      const data = await res.json()
+      console.log('추가 타임라인 데이터:', data)
+
+      if (!data.timeline || !Array.isArray(data.timeline.rows)) {
+        throw new Error('타임라인 데이터가 올바르지 않습니다.')
+      }
+
+      const newItems = data.timeline.rows.map((item: TimelineItem) => {
+        // 기존의 타임라인 아이템 처리 로직
+        if (item.code === '201') {
+          return {
+            ...item,
+            data: {
+              ...item.data,
+              raidMode: item.data.modeName,
+              raidDifficulty: item.data.hard ? '하드' : '일반',
+              raidName: item.data.raidName || '레이드',
+              raidPartyName: item.data.raidPartyName
+            }
+          }
+        }
+        // ... 기존의 다른 이벤트 처리 로직 ...
+        return item
+      }).filter((item: TimelineItem | null): item is TimelineItem => item !== null)
+
+      if (newItems.length < ITEMS_PER_PAGE) {
+        setHasMore(false)
+      }
+
+      setTimeline(prev => [...prev, ...newItems])
+      setPage(prev => prev + 1)
+    } catch (err) {
+      console.error('추가 타임라인 로딩 에러:', err)
+      setError(err instanceof Error ? err.message : '추가 타임라인 정보를 불러오는 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   const handleSearch = async () => {
     if (!characterName) return
@@ -141,6 +226,10 @@ function App() {
   const fetchTimeline = async (characterId: string) => {
     setIsLoading(true)
     setError(null)
+    setPage(1)
+    setHasMore(true)
+    setTimeline([])
+    
     try {
       const endDate = new Date()
       const startDate = new Date()
@@ -150,7 +239,7 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}`
+      const url = `/api/proxy?path=servers/${serverId}/characters/${characterId}/timeline&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=${ITEMS_PER_PAGE}&offset=0`
       
       const res = await fetch(url)
       if (!res.ok) {
@@ -158,17 +247,15 @@ function App() {
       }
 
       const data = await res.json()
-      console.log('타임라인 원본 데이터:', data)
+      console.log('타임라인 초기 데이터:', data)
 
-      // API 응답 구조에 맞게 데이터 처리
       if (!data.timeline || !Array.isArray(data.timeline.rows)) {
         throw new Error('타임라인 데이터가 올바르지 않습니다.')
       }
 
-      // 타임라인 데이터 정제
       const processedTimeline = data.timeline.rows
         .map((item: TimelineItem) => {
-          // 레이드 클리어 이벤트 (201) 처리
+          // 기존의 타임라인 아이템 처리 로직
           if (item.code === '201') {
             return {
               ...item,
@@ -272,8 +359,12 @@ function App() {
         })
         .filter((item: TimelineItem | null): item is TimelineItem => item !== null)
 
-      console.log('처리된 타임라인 데이터:', processedTimeline)
+      if (processedTimeline.length < ITEMS_PER_PAGE) {
+        setHasMore(false)
+      }
+
       setTimeline(processedTimeline)
+      setPage(2) // 다음 페이지부터 로딩
       
     } catch (err) {
       console.error('타임라인 에러:', err)
@@ -486,16 +577,19 @@ function App() {
                 {error}
               </div>
             ) : timeline.length > 0 ? (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '15px',
-                overflowY: 'auto',
-                paddingRight: '10px',
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#888 #f1f1f1',
-                flex: 1
-              }}>
+              <div 
+                ref={timelineContainerRef}
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '15px',
+                  overflowY: 'auto',
+                  paddingRight: '10px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#888 #f1f1f1',
+                  flex: 1
+                }}
+              >
                 {timeline.map((item, index) => {
                   console.log('렌더링할 타임라인 항목:', item)
 
@@ -709,6 +803,25 @@ function App() {
                     </div>
                   )
                 })}
+                {isLoadingMore && (
+                  <div style={{ 
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#666'
+                  }}>
+                    추가 데이터 로딩 중...
+                  </div>
+                )}
+                {!hasMore && timeline.length > 0 && (
+                  <div style={{ 
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#666',
+                    fontSize: '0.9em'
+                  }}>
+                    더 이상 불러올 데이터가 없습니다.
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ 
