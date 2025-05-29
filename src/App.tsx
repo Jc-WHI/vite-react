@@ -526,7 +526,7 @@ function App() {
                           flex: 1
                         }}>
                           {content}
-                          {item.data.channelName && item.code !== 'channel' && (
+                          {item.data.channelName && item.code !== '204' && (
                             <div style={{
                               fontSize: '0.9em',
                               color: style?.color ? `${style.color}99` : '#999',
@@ -535,7 +535,7 @@ function App() {
                               {item.data.channelName} {item.data.channelNo ? `- ${item.data.channelNo}채널` : ''}
                             </div>
                           )}
-                          {item.data.dungeonName && item.code !== 'region' && (
+                          {item.data.dungeonName && item.code !== '202' && (
                             <div style={{
                               fontSize: '0.9em',
                               color: style?.color ? `${style.color}99` : '#999',
