@@ -27,8 +27,7 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
-      const url = `https://api.neople.co.kr/df/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}&apikey=${apiKey}`;
+      const url = `/api/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}`;
       const res = await fetch(url)
       const data = await res.json()
       setCharacters(data.rows || [])
@@ -54,9 +53,7 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
-      const baseUrl = 'https://api.neople.co.kr/df'
-      const url = `${baseUrl}/servers/${serverId}/characters/${characterId}/timeline?apikey=${apiKey}&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
+      const url = `/api/servers/${serverId}/characters/${characterId}/timeline?startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
       
       console.log('타임라인 API 요청:', {
         url,
