@@ -15,6 +15,8 @@ interface Timeline {
     itemName?: string;
     itemGrade?: string;
     channelName?: string;
+    itemId?: string;
+    itemRarity?: string;
     [key: string]: any;
   };
   date: string;
@@ -385,6 +387,7 @@ function App() {
                   
                   let content = ''
                   let style: ItemStyle | undefined = undefined
+                  let itemImage: string | null = null
                   
                   switch (item.code) {
                     case 'adventureName':
@@ -406,8 +409,11 @@ function App() {
                       content = `${item.data.dungeonName} 클리어`
                       break
                     case 'item':
-                      content = `${item.data.itemName} (${item.data.itemGrade}) 획득 - ${item.data.channelName}`
-                      style = item.data.itemGrade ? ITEM_GRADES[item.data.itemGrade] : undefined
+                      content = `${item.data.itemName} (${item.data.itemGrade || item.data.itemRarity}) 획득 - ${item.data.channelName || ''}`
+                      style = item.data.itemGrade ? ITEM_GRADES[item.data.itemGrade] : (item.data.itemRarity ? ITEM_GRADES[item.data.itemRarity] : undefined)
+                      if (item.data.itemId) {
+                        itemImage = `https://img-api.neople.co.kr/df/items/${item.data.itemId}`
+                      }
                       break
                     default:
                       content = JSON.stringify(item.data, null, 2)
@@ -421,15 +427,23 @@ function App() {
                       backgroundColor: style?.backgroundColor || '#f8f9fa',
                       color: style?.color || '#333',
                       borderColor: style?.borderColor || '#eee',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px'
                     }}>
                       <div style={{ 
                         fontSize: '0.9em', 
                         color: style?.color ? 'rgba(255,255,255,0.8)' : '#666',
-                        marginBottom: '5px'
+                        marginBottom: '5px',
+                        minWidth: '110px',
+                        textAlign: 'right'
                       }}>
                         {formattedDate}
                       </div>
+                      {itemImage && (
+                        <img src={itemImage} alt={item.data.itemName} style={{ width: 48, height: 48, borderRadius: 8, border: '1px solid #ddd', background: '#fff' }} />
+                      )}
                       <div style={{ 
                         fontSize: '1.1em',
                         fontWeight: '500'
