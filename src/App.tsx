@@ -27,11 +27,13 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const url = `/api/df?serverId=${serverId}&characterName=${encodeURIComponent(characterName)}`;
+      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
+      const url = `https://api.neople.co.kr/df/servers/${serverId}/characters?characterName=${encodeURIComponent(characterName)}&apikey=${apiKey}`;
       const res = await fetch(url)
       const data = await res.json()
       setCharacters(data.rows || [])
     } catch (err) {
+      console.error('캐릭터 검색 에러:', err)
       setError('캐릭터 검색 중 오류가 발생했습니다.')
     } finally {
       setIsLoading(false)
@@ -52,10 +54,8 @@ function App() {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0]
       }
 
-      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'  // 직접 API 키 설정
-      
-      // API 요청 URL 구성
-      const baseUrl = 'https://api.neople.co.kr/df'  // 직접 API 서버 사용
+      const apiKey = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
+      const baseUrl = 'https://api.neople.co.kr/df'
       const url = `${baseUrl}/servers/${serverId}/characters/${characterId}/timeline?apikey=${apiKey}&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&limit=10`
       
       console.log('타임라인 API 요청:', {
