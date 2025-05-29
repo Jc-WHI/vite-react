@@ -46,9 +46,6 @@ const ITEM_GRADES: Record<string, ItemStyle> = {
   }
 }
 
-const API_KEY = 'o3VgpfcYb4BEcTQj4zhqweX8NCUGntYn'
-const API_BASE_URL = 'https://api.neople.co.kr/df'
-
 function App() {
   const [serverId, setServerId] = useState('cain')
   const [characterName, setCharacterName] = useState('')
