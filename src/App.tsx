@@ -37,17 +37,17 @@ interface ItemStyle {
 
 const ITEM_GRADES: Record<string, ItemStyle> = {
   '레전더리': {
-    backgroundColor: 'rgba(231, 161, 30, 0.97)',
+    backgroundColor: 'rgba(231, 161, 30, 0.32)',
     color: '#ff8c00',
     borderColor: '#ff8c00'
   },
   '에픽': {
-    backgroundColor: 'rgba(251, 255, 0, 0.92)',
+    backgroundColor: 'rgba(251, 255, 0, 0.38)',
     color: '#ff6b00',
     borderColor: '#ff6b00'
   },
   '유니크': {
-    backgroundColor: 'rgba(255, 0, 221, 0.93)',
+    backgroundColor: 'rgba(255, 0, 221, 0.32)',
     color: '#ff4500',
     borderColor: '#ff4500'
   }
