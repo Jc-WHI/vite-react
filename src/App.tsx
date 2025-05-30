@@ -56,17 +56,17 @@ const ITEM_GRADES: Record<string, ItemStyle> = {
 // 타임라인 이벤트 타입별 스타일 정의
 const EVENT_STYLES: Record<string, ItemStyle> = {
   'raid': {
-    backgroundColor: 'rgb(123, 100, 255)',
+    backgroundColor: 'rgba(123, 100, 255, 0.05)',
     color: '#646cff',
     borderColor: '#646cff'
   },
   'region': {
-    backgroundColor: 'rgba(175, 76, 167, 0.97)',
+    backgroundColor: 'rgba(175, 76, 167, 0.24)',
     color: '#4caf50',
     borderColor: '#4caf50'
   },
   'level': {
-    backgroundColor: 'rgba(33, 243, 68, 0.99)',
+    backgroundColor: 'rgba(33, 243, 68, 0.11)',
     color: '#2196f3',
     borderColor: '#2196f3'
   },
