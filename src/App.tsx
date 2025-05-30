@@ -89,7 +89,7 @@ function App() {
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const timelineContainerRef = useRef<HTMLDivElement>(null)
-  const ITEMS_PER_PAGE = 20
+  const ITEMS_PER_PAGE = 100
 
   // 스크롤 이벤트 핸들러
   const handleScroll = useCallback(() => {
