@@ -36,6 +36,11 @@ interface ItemStyle {
 }
 
 const ITEM_GRADES: Record<string, ItemStyle> = {
+  '태초': {
+    backgroundColor: 'rgba(0, 255, 157, 0.32)',
+    color: '#ff0000',
+    borderColor: '#ff0000'
+  },
   '레전더리': {
     backgroundColor: 'rgba(231, 161, 30, 0.32)',
     color: '#ff8c00',
@@ -50,6 +55,11 @@ const ITEM_GRADES: Record<string, ItemStyle> = {
     backgroundColor: 'rgba(255, 0, 221, 0.32)',
     color: '#ff4500',
     borderColor: '#ff4500'
+  },
+  '레어': {
+    backgroundColor: 'rgba(98, 0, 255, 0.36)',
+    color: '#0000ff',
+    borderColor: '#0000ff'
   }
 }
 
