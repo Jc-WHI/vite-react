@@ -37,17 +37,17 @@ interface ItemStyle {
 
 const ITEM_GRADES: Record<string, ItemStyle> = {
   '레전더리': {
-    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+    backgroundColor: 'rgba(231, 161, 30, 0.97)',
     color: '#ff8c00',
     borderColor: '#ff8c00'
   },
   '에픽': {
-    backgroundColor: 'rgba(255, 140, 0, 0.1)',
+    backgroundColor: 'rgba(251, 255, 0, 0.92)',
     color: '#ff6b00',
     borderColor: '#ff6b00'
   },
   '유니크': {
-    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+    backgroundColor: 'rgba(255, 0, 221, 0.93)',
     color: '#ff4500',
     borderColor: '#ff4500'
   }
@@ -56,17 +56,17 @@ const ITEM_GRADES: Record<string, ItemStyle> = {
 // 타임라인 이벤트 타입별 스타일 정의
 const EVENT_STYLES: Record<string, ItemStyle> = {
   'raid': {
-    backgroundColor: 'rgba(100, 108, 255, 0.1)',
+    backgroundColor: 'rgb(123, 100, 255)',
     color: '#646cff',
     borderColor: '#646cff'
   },
   'region': {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: 'rgba(175, 76, 167, 0.97)',
     color: '#4caf50',
     borderColor: '#4caf50'
   },
   'level': {
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    backgroundColor: 'rgba(33, 243, 68, 0.99)',
     color: '#2196f3',
     borderColor: '#2196f3'
   },
@@ -201,7 +201,7 @@ function App() {
         const text = await res.text()
         console.error('잘못된 응답 형식:', {
           contentType,
-          body: text.substring(0, 200) // 처음 200자만 로깅
+          body: text.substring(0) // 처음 200자만 로깅
         })
         throw new Error('서버가 JSON 응답을 반환하지 않았습니다.')
       }
@@ -393,7 +393,7 @@ function App() {
         color: '#333',
         fontSize: '2.5em'
       }}>
-        던전앤파이터 캐릭터 타임라인
+        조담
       </h1>
 
       <div style={{ 
@@ -757,8 +757,8 @@ function App() {
                               src={itemImage} 
                               alt={item.data.itemName || '아이템 이미지'} 
                               style={{ 
-                                width: '100%',
-                                height: '100%',
+                                width: '50%',
+                                height: '50%',
                                 borderRadius: '8px',
                                 border: '1px solid #ddd',
                                 background: '#fff',
